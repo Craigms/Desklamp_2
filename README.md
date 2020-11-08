@@ -4,7 +4,7 @@ Alternative Firmware for Mijia Xiaomi Desk Lamp 2 (ESP32 micro)
 # Inspiration
 This firmware was inspired by 
 * [fvollmers](https://github.com/fvollmer/xiomi-desk-lamp-open-firmware
-* [Torxgewinde](https://github.com/Torxgewinde/Desk-Lamp-Alternative-Firmware projects.
+* [Torxgewinde](https://github.com/Torxgewinde/Desk-Lamp-Alternative-Firmware
 
 As the Xiaomi desklamp2 uses the ESP32 (single core) rather than the ESP8266 micro in original Xiaomi desklmap I ended up just writing from scratch.
 
