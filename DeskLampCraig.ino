@@ -43,7 +43,7 @@
 uint32_t warmLookup[] = {8, 9, 10, 12, 15, 25, 35,/*factory values follow*/
                          45, 58, 80, 109, 145, 188, 238, 296, 361, 433, 512
                         };
-uint32_t coldLookup[] = {10, 12, 15, 17, 20, 25, 30,
+uint32_t coldLookup[] = {10, 12, 15, 17, 20, 25, 30,/*factory values follow*/
                          38, 48, 64,  85, 112, 144, 181, 213, 271, 323, 382
                         };
 
@@ -51,7 +51,6 @@ int32_t currentWarmColdTenPercent = 10;  // 10 = (100%) warm, 0 = cold
 int32_t currentBrightness = 8;  // 0 = min, 14 = max
 uint32_t buttonlastPressedTime = 0;
 uint32_t powerState = 0; // 0 = off
-
 ESP32Encoder encoder;
 
 void IRAM_ATTR buttonInterrupt() {
@@ -59,17 +58,24 @@ void IRAM_ATTR buttonInterrupt() {
   // if button just been pressed, start timer
   if(!digitalRead(ENCODER_BUTTON_PIN))
   { 
-      buttonlastPressedTime = millis();
+     if( buttonlastPressedTime == 0)
+     {
+        buttonlastPressedTime = millis();
+     }
   }
 
-  // button released, check if it was a quick press, also debounce by 
+  // button released, check if it was a quick press, also debounce 
   else
   { 
-    if(((millis() - buttonlastPressedTime) < 1000) && ((millis() - buttonlastPressedTime) > 100))
+    if(digitalRead(ENCODER_BUTTON_PIN))
     {
-      // this was a 'click'
-      powerState = !powerState;
-      digitalWrite(LED_ENABLE_PIN, powerState);
+      if(((millis() - buttonlastPressedTime) < 1000) && ((millis() - buttonlastPressedTime) > 50))
+      {
+        // this was a 'click'
+        powerState = !powerState;
+        digitalWrite(LED_ENABLE_PIN, powerState);
+      }
+      buttonlastPressedTime = 0;  // reset timer ready for next press
     }
   }
 }
@@ -77,7 +83,8 @@ void IRAM_ATTR buttonInterrupt() {
 
 void setup() {
   Serial.begin(115200);
-
+  Serial.println("hello");
+  
   // LED PWM setup
   ledcSetup(WARM_LED_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
   ledcSetup(COLD_LED_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
@@ -95,7 +102,7 @@ void setup() {
 
   // encoder button
   pinMode(ENCODER_BUTTON_PIN, INPUT_PULLUP);
-  attachInterrupt(ENCODER_BUTTON_PIN, buttonInterrupt, RISING);
+  attachInterrupt(ENCODER_BUTTON_PIN, buttonInterrupt, CHANGE);
 }
 
 void loop() {
@@ -133,11 +140,4 @@ void loop() {
   encoder.setCount(0); // reset the count each time
   
   delay(100);
-}
-
-
-
-void setLeds(uint8_t warmwhite, uint8_t coldwhite) {
-  ledcWrite(WARM_LED_CHANNEL, warmwhite);
-  ledcWrite(COLD_LED_CHANNEL, coldwhite);
 }
